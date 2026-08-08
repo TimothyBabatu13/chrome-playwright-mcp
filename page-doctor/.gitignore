@@ -1,0 +1,24 @@
+# Secrets
+.env
+
+# Generated reports
+reports/*.md
+reports/*.html
+reports/*.json
+!reports/.gitkeep
+
+# Dependencies
+node_modules/
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp

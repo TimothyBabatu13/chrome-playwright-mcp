@@ -1,0 +1,25 @@
+{
+  "name": "chrome-playwright-mcp",
+  "version": "1.0.0",
+  "description": "GHW Agents Week - browser automation and debugging workshops",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "lint": "biome check .",
+    "lint:fix": "biome check --write .",
+    "format": "biome format --write .",
+    "ci": "biome ci ."
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/utk09-NCL/chrome-playwright-mcp.git"
+  },
+  "homepage": "https://github.com/utk09-NCL/chrome-playwright-mcp#readme",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.5.7"
+  }
+}

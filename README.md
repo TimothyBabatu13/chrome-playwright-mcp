@@ -1,2 +1,3 @@
-# chrome-playwright-mcp
-GHW Agents Week
+# Chrome & Playwright MCP
+
+GHW Agents Week - browser automation and debugging workshops.

@@ -1,0 +1,279 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <title>Bargain Bin Electronics - Deals</title>
+
+  <style>
+    body {
+      font-family: system-ui, sans-serif;
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+
+    h1 {
+      font-size: 2rem;
+    }
+
+    .hero {
+      width: 100%;
+      background: #eee;
+    }
+
+    .card {
+      border: 1px solid #ddd;
+      padding: 1rem;
+      margin: 1rem 0;
+      border-radius: 6px;
+    }
+
+    .banner {
+      background: #fee;
+      padding: 1rem;
+      border: 1px solid #fbb;
+    }
+
+    .legacy-grid {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 16px;
+    }
+
+    .legacy-grid--tight {
+      gap: 4px;
+    }
+
+    .legacy-grid--loose {
+      gap: 32px;
+    }
+
+    .btn-primary {
+      background: #06c;
+      color: #fff;
+      padding: 12px 24px;
+      border-radius: 4px;
+    }
+
+    .btn-secondary {
+      background: #eee;
+      color: #333;
+      padding: 12px 24px;
+      border-radius: 4px;
+    }
+
+    .btn-danger {
+      background: #c00;
+      color: #fff;
+      padding: 12px 24px;
+      border-radius: 4px;
+    }
+
+    .btn-ghost {
+      background: transparent;
+      border: 1px solid currentColor;
+      padding: 12px 24px;
+    }
+
+    .modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, .5);
+      display: none;
+    }
+
+    .modal__dialog {
+      background: #fff;
+      max-width: 480px;
+      margin: 10vh auto;
+      padding: 2rem;
+    }
+
+    .modal__header {
+      border-bottom: 1px solid #eee;
+      padding-bottom: 1rem;
+    }
+
+    .modal__footer {
+      border-top: 1px solid #eee;
+      padding-top: 1rem;
+      text-align: right;
+    }
+
+    .tooltip {
+      position: absolute;
+      background: #333;
+      color: #fff;
+      padding: 4px 8px;
+      font-size: 12px;
+    }
+
+    .tooltip--top::after {
+      border-top-color: #333;
+    }
+
+    .tooltip--bottom::after {
+      border-bottom-color: #333;
+    }
+
+    .carousel {
+      overflow: hidden;
+      position: relative;
+    }
+
+    .carousel__track {
+      display: flex;
+      transition: transform .3s ease;
+    }
+
+    .carousel__slide {
+      flex: 0 0 100%;
+    }
+
+    .carousel__dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #ccc;
+    }
+
+    .table-striped tr:nth-child(odd) {
+      background: #fafafa;
+    }
+
+    .table-bordered td {
+      border: 1px solid #ddd;
+    }
+
+    .badge-new {
+      background: #0a0;
+      color: #fff;
+      font-size: 11px;
+      padding: 2px 6px;
+    }
+
+    .badge-sale {
+      background: #c00;
+      color: #fff;
+      font-size: 11px;
+      padding: 2px 6px;
+    }
+
+    .avatar-sm {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+    }
+
+    .avatar-md {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+    }
+
+    .avatar-lg {
+      width: 96px;
+      height: 96px;
+      border-radius: 50%;
+    }
+
+    .breadcrumb {
+      list-style: none;
+      display: flex;
+      gap: 8px;
+      font-size: 13px;
+    }
+
+    .pagination {
+      display: flex;
+      gap: 4px;
+      justify-content: center;
+    }
+
+    .sidebar {
+      width: 280px;
+      float: left;
+    }
+
+    .sidebar__section {
+      margin-bottom: 2rem;
+    }
+
+    .footer-columns {
+      display: flex;
+      gap: 40px;
+    }
+
+    .newsletter-form input {
+      padding: 8px;
+      width: 240px;
+    }
+  </style>
+
+  <script>
+    var start = Date.now();
+    var sink = 0;
+    while (Date.now() - start < 350) { sink += Math.sqrt(sink + 1); }
+    window.__blockedFor = Date.now() - start;
+  </script>
+</head>
+
+<body>
+
+  <h1>Today's Deals</h1>
+
+  <img class="hero" id="hero" alt="Featured product">
+
+  <div class="card">
+    <h2>Wireless Headphones</h2>
+    <p>Noise cancelling, 30 hour battery.</p>
+  </div>
+
+  <div class="card">
+    <h2>Mechanical Keyboard</h2>
+    <p>Hot-swappable switches, RGB backlight.</p>
+  </div>
+
+  <div id="reviews"></div>
+
+  <script>
+    document.getElementById('add-to-cart-button').addEventListener('click', function () {
+      console.log('never runs');
+    });
+  </script>
+
+  <script>
+    fetch('/api/v1/recommendations')
+      .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); })
+      .catch(function (err) { console.error('Failed to load recommendations:', err.message); });
+
+    Promise.reject(new Error('Analytics SDK failed to initialise'));
+
+    console.warn('checkout.js: `legacyCheckout()` is deprecated and will be removed in v4.');
+
+    setTimeout(function () {
+      var svg = '<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="500">' +
+        '<rect width="1200" height="500" fill="#4a5568"/>' +
+        '<text x="60" y="260" font-size="48" fill="#fff">Featured Product</text>' +
+        new Array(400).join('<circle cx="600" cy="250" r="120" fill="#2d3748" opacity="0.02"/>') +
+        '</svg>';
+      document.getElementById('hero').src = 'data:image/svg+xml;base64,' + btoa(svg);
+    }, 900);
+
+    setTimeout(function () {
+      var banner = document.createElement('div');
+      banner.className = 'banner';
+      banner.textContent = 'Free shipping on orders over $50 - today only!';
+      document.body.insertBefore(banner, document.body.firstChild);
+    }, 1400);
+
+    setTimeout(function () {
+      document.getElementById('reviews').innerHTML =
+        '<div class="card"><h2>Customer reviews</h2><p>★★★★☆ - 1,284 reviews</p></div>';
+    }, 2000);
+  </script>
+
+</body>
+
+</html>

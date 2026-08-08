@@ -1,0 +1,34 @@
+{
+  "name": "page-doctor",
+  "version": "1.0.0",
+  "description": "AI-powered page auditor built on the Chrome DevTools Protocol",
+  "type": "module",
+  "main": "src/diagnose.js",
+  "scripts": {
+    "diagnose": "node src/diagnose.js",
+    "demo": "node src/demo.js",
+    "compare": "node src/compare.js",
+    "test-ai": "node src/ai.js",
+    "test-setup": "node src/test-setup.js"
+  },
+  "keywords": [
+    "chrome-devtools-protocol",
+    "cdp",
+    "playwright",
+    "performance",
+    "core-web-vitals",
+    "ai",
+    "gemini"
+  ],
+  "author": "",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "playwright": "^1.42.0",
+    "openai": "^4.28.0",
+    "dotenv": "^16.4.5",
+    "chalk": "^5.3.0"
+  }
+}
