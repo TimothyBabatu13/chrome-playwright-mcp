@@ -8,6 +8,10 @@ import { diagnose } from './diagnose.js';
 const here = path.dirname(fileURLToPath(import.meta.url));
 const demoDir = path.join(here, '..', 'demo');
 
+/**
+ * Start a local demo server that serves the intentionally broken example page.
+ * @returns {Promise<import('node:http').Server>} A listening HTTP server instance.
+ */
 function startServer() {
   const server = createServer(async (req, res) => {
     const url = new URL(req.url, 'http://localhost');
@@ -41,7 +45,7 @@ const server = await startServer();
 const { port } = server.address();
 const url = `http://127.0.0.1:${port}/`;
 
-console.log(chalk.bold.cyan('\n🩺 Page Doctor - demo\n'));
+console.log(chalk.bold.cyan('\n Page Doctor - demo\n'));
 console.log(chalk.gray(`Serving demo/broken-page.html at ${url}`));
 console.log(chalk.gray('This page has deliberate problems: a JS error, an unhandled'));
 console.log(chalk.gray('rejection, a 404, layout shift, and mostly-unused CSS.\n'));
