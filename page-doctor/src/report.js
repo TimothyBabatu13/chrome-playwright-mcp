@@ -3,6 +3,10 @@ import path from 'node:path';
 import chalk from 'chalk';
 import { formatBytes, rateAll } from './vitals.js';
 
+/**
+ * Rendering helpers for presenting audit results in the terminal, Markdown, HTML, and JSON files.
+ */
+
 const SEVERITY_STYLE = {
   critical: { icon: '🔴', label: 'CRITICAL', color: chalk.red.bold },
   warning: { icon: '🟡', label: 'WARNING', color: chalk.yellow.bold },
@@ -15,6 +19,11 @@ const RATING_COLOR = {
   poor: chalk.red
 };
 
+/**
+ * Print a human-readable console summary of the audit and AI analysis.
+ * @param {object} audit - The structured audit data.
+ * @param {object} analysis - The AI-generated findings and verdict.
+ */
 export function printReport(audit, analysis) {
   console.log(chalk.bold.cyan(`\n ${audit.title || audit.url}`));
   console.log(chalk.gray(`   ${audit.url}`));
@@ -71,6 +80,12 @@ export function printReport(audit, analysis) {
   });
 }
 
+/**
+ * Convert the audit and analysis into a Markdown report.
+ * @param {object} audit - The structured audit data.
+ * @param {object} analysis - The AI-generated findings and verdict.
+ * @returns {string} A Markdown document ready to save or share.
+ */
 export function toMarkdown(audit, analysis) {
   const lines = [];
 
@@ -152,6 +167,11 @@ export function toMarkdown(audit, analysis) {
   return lines.join('\n');
 }
 
+/**
+ * Escape a string for safe inclusion in an HTML document.
+ * @param {string} str - The raw text to escape.
+ * @returns {string} An HTML-safe string.
+ */
 const escapeHTML = str =>
   String(str)
     .replace(/&/g, '&amp;')
@@ -159,6 +179,12 @@ const escapeHTML = str =>
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;');
 
+/**
+ * Build a standalone HTML report from the audit and analysis data.
+ * @param {object} audit - The structured audit data.
+ * @param {object} analysis - The AI-generated findings and verdict.
+ * @returns {string} A complete HTML page.
+ */
 export function toHTML(audit, analysis) {
   const vitalRows = rateAll(audit.vitals)
     .map(
@@ -270,6 +296,13 @@ export function toHTML(audit, analysis) {
 </html>`;
 }
 
+/**
+ * Save the Markdown, HTML, and JSON versions of a report to disk.
+ * @param {object} audit - The structured audit data.
+ * @param {object} analysis - The AI-generated findings and verdict.
+ * @param {string} [outputDir='reports'] - The folder where the report files should be written.
+ * @returns {Promise<object>} The paths to the generated report files.
+ */
 export async function saveReport(audit, analysis, outputDir = 'reports') {
   await fs.mkdir(outputDir, { recursive: true });
 
@@ -285,6 +318,11 @@ export async function saveReport(audit, analysis, outputDir = 'reports') {
   return { markdown: `${base}.md`, html: `${base}.html`, json: `${base}.json` };
 }
 
+/**
+ * Create a safe file name slug from a URL.
+ * @param {string} url - The page URL.
+ * @returns {string} A filesystem-safe slug for report files.
+ */
 function slugify(url) {
   try {
     const { hostname, pathname } = new URL(url);
