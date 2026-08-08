@@ -4,6 +4,12 @@ import { analyzeAudit } from './analyze.js';
 import { auditPage, THROTTLE_PRESETS } from './audit.js';
 import { printReport, saveReport } from './report.js';
 
+/**
+ * Run the full diagnosis flow: audit a page, analyze the results, print a report, and save artifacts.
+ * @param {string} url - The page URL to diagnose.
+ * @param {object} [options] - Optional audit settings such as throttling and settle time.
+ * @returns {Promise<{audit: object, analysis: object, files: object}>} The generated audit, analysis, and report file paths.
+ */
 export async function diagnose(url, options = {}) {
   const audit = await auditPage(url, options);
 
@@ -27,6 +33,11 @@ export async function diagnose(url, options = {}) {
   return { audit, analysis, files };
 }
 
+/**
+ * Parse CLI arguments into a URL plus a small options object.
+ * @param {string[]} argv - The raw command-line arguments.
+ * @returns {{url: string|null, options: object}} Parsed URL and option values.
+ */
 function parseArgs(argv) {
   const options = {};
   let url = null;
