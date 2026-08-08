@@ -2,6 +2,10 @@ import 'dotenv/config';
 import { fileURLToPath } from 'node:url';
 import OpenAI from 'openai';
 
+/**
+ * Shared AI helper for routing prompts to the configured provider.
+ * It supports Gemini and OpenAI-compatible backends such as OpenAI, LM Studio, Ollama, and custom endpoints.
+ */
 const AI_PROVIDER = (process.env.AI_PROVIDER || 'gemini').toLowerCase();
 
 // Google's Interactions API endpoint
@@ -17,11 +21,19 @@ const DEFAULT_MODELS = {
   ollama: 'qwen2.5:latest'
 };
 
+/**
+ * Resolve the model name for the current provider.
+ * @returns {string} The configured model identifier.
+ */
 function getModelName() {
   if (process.env.MODEL) return process.env.MODEL;
   return DEFAULT_MODELS[AI_PROVIDER] || 'gpt-4o-mini';
 }
 
+/**
+ * Create an OpenAI-compatible client for the selected AI provider.
+ * @returns {OpenAI} A configured client instance.
+ */
 function createOpenAIClient() {
   switch (AI_PROVIDER) {
     case 'openai':
@@ -48,6 +60,11 @@ function createOpenAIClient() {
   }
 }
 
+/**
+ * Ensure that a required environment variable exists.
+ * @param {string} name - The environment variable name to check.
+ * @returns {string} The resolved API key or endpoint value.
+ */
 function requireKey(name) {
   const key = process.env[name];
   if (!key) {
@@ -57,11 +74,21 @@ function requireKey(name) {
 }
 
 let openAIClient;
+
+/**
+ * Lazily create and cache the OpenAI-compatible client.
+ * @returns {OpenAI} The cached client instance.
+ */
 function getOpenAIClient() {
   if (!openAIClient) openAIClient = createOpenAIClient();
   return openAIClient;
 }
 
+/**
+ * Extract readable text from a Gemini interaction payload.
+ * @param {object} interaction - The raw Gemini response object.
+ * @returns {string} The combined text content from the interaction.
+ */
 function extractInteractionText(interaction) {
   if (typeof interaction.output_text === 'string' && interaction.output_text.trim()) {
     return interaction.output_text;
@@ -77,6 +104,13 @@ function extractInteractionText(interaction) {
   return chunks.join('');
 }
 
+/**
+ * Send a prompt to the Gemini API and return the generated text.
+ * @param {string} systemPrompt - Optional system instructions for the model.
+ * @param {string} userPrompt - The user-facing prompt to answer.
+ * @param {object} options - Request settings such as schema and token limits.
+ * @returns {Promise<string>} The model response as plain text.
+ */
 async function askGemini(systemPrompt, userPrompt, { schema, temperature, maxOutputTokens }) {
   const body = {
     model: getModelName(),
@@ -121,6 +155,13 @@ async function askGemini(systemPrompt, userPrompt, { schema, temperature, maxOut
   return text;
 }
 
+/**
+ * Send a prompt to an OpenAI-compatible API endpoint.
+ * @param {string} systemPrompt - Optional system instructions for the model.
+ * @param {string} userPrompt - The user-facing prompt to answer.
+ * @param {object} options - Request settings such as temperature and token limits.
+ * @returns {Promise<string>} The model response as plain text.
+ */
 async function askOpenAICompatible(systemPrompt, userPrompt, { temperature, maxOutputTokens }) {
   const messages = [];
   if (systemPrompt) messages.push({ role: 'system', content: systemPrompt });
@@ -138,6 +179,13 @@ async function askOpenAICompatible(systemPrompt, userPrompt, { temperature, maxO
   return text;
 }
 
+/**
+ * Send a prompt to the configured AI provider with built-in retry handling.
+ * @param {string} systemPrompt - Optional system instructions.
+ * @param {string} userPrompt - The prompt to send to the model.
+ * @param {object} [options] - Optional settings such as temperature, token limits, and retries.
+ * @returns {Promise<string>} The final model response.
+ */
 export async function askAI(systemPrompt, userPrompt, options = {}) {
   const { temperature = 0.7, maxOutputTokens, schema, retries = 2 } = options;
 
@@ -175,6 +223,10 @@ export async function askAI(systemPrompt, userPrompt, options = {}) {
   }
 }
 
+/**
+ * Print a short, human-friendly explanation for common AI errors.
+ * @param {Error & {status?: number, code?: string}} error - The error to explain.
+ */
 function explainError(error) {
   console.error('AI Error:', error.message);
 
@@ -196,6 +248,10 @@ function explainError(error) {
   }
 }
 
+/**
+ * Run a quick self-check by sending a tiny prompt to the configured AI provider.
+ * @returns {Promise<boolean>} True when the connection succeeds, otherwise false.
+ */
 export async function testAI() {
   console.log('\nTesting AI connection...\n');
 
