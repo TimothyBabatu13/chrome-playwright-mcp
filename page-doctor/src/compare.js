@@ -5,6 +5,13 @@ import { formatValue, rate, THRESHOLDS } from './vitals.js';
 
 const COMPARED = ['lcpMs', 'fcpMs', 'totalBlockingMs', 'cls', 'ttfbMs'];
 
+/**
+ * Compare page metrics across two throttling presets and print the differences.
+ * @param {string} url - The page URL to audit.
+ * @param {string} [fromPreset='none'] - The baseline throttling preset.
+ * @param {string} [toPreset='mobile'] - The comparison throttling preset.
+ * @returns {Promise<{before: object, after: object}>} The audit results for both runs.
+ */
 export async function compareThrottling(url, fromPreset = 'none', toPreset = 'mobile') {
   console.log(chalk.bold.cyan('\n Comparing network + CPU conditions\n'));
 
@@ -76,6 +83,11 @@ export async function compareThrottling(url, fromPreset = 'none', toPreset = 'mo
   return { before, after };
 }
 
+/**
+ * Parse CLI arguments into a target URL and option values.
+ * @param {string[]} argv - The raw command-line arguments.
+ * @returns {{url: string|null, options: object}} Parsed URL and option values.
+ */
 function parseArgs(argv) {
   const options = {};
   let url = null;
@@ -94,7 +106,7 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const { url, options } = parseArgs(process.argv.slice(2));
 
   if (!url) {
-    console.log(chalk.bold.cyan('\n Throttle comparison\n'));
+    console.log(chalk.bold.cyan('\n📊 Throttle comparison\n'));
     console.log('Usage:');
     console.log('  npm run compare <url>');
     console.log('  npm run compare <url> -- --from=none --to=slow-3g\n');
