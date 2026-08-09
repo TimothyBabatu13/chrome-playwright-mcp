@@ -3,11 +3,17 @@ import { fileURLToPath } from 'node:url';
 import { chromium } from 'playwright';
 import { formatAsMarkdown } from './formatters.js';
 
+/**
+ * Collect headings, paragraph content, and code snippets from a page.
+ * @param {string} url - Source page URL.
+ * @returns {Promise<Object>} Collected study payload.
+ */
 export async function collectMaterial(url) {
   console.log(`\nCollecting study material from: ${url}\n`);
 
   const browser = await chromium.launch({
-    headless: process.env.HEADLESS !== 'false' // Allow running in non-headless mode for debugging.
+    // Set HEADLESS=false to watch the browser while debugging.
+    headless: process.env.HEADLESS !== 'false'
   });
 
   let data;
@@ -15,16 +21,19 @@ export async function collectMaterial(url) {
   try {
     const page = await browser.newPage();
 
-    await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 60000 }); // Wait for the DOM to be fully loaded, with a 60-second timeout.
+    // Wait for the base DOM before extracting content.
+    await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 60000 });
 
     await page
-      .waitForSelector('h1, h2, h3', { timeout: 15000 }) // Wait for headings to appear, with a 15-second timeout.
+      // Headings help section extraction; continue if unavailable.
+      .waitForSelector('h1, h2, h3', { timeout: 15000 })
       .catch(() =>
         console.warn('No headings found on the page within 15 seconds, proceeding without them.')
-      ); // Allow proceeding even if no headings are found.
+      );
 
     console.log('Page loaded, extracting content...');
 
+    // Capture fenced code blocks when present.
     const codeSnippets = await page.$$eval('pre code', codes =>
       codes.map((code, index) => ({
         id: index + 1,
@@ -35,6 +44,7 @@ export async function collectMaterial(url) {
 
     console.log(`Found ${codeSnippets.length} code snippet(s).`);
 
+    // Group paragraph text under each heading.
     const content = await page.evaluate(() => {
       const sections = [];
       const headings = document.querySelectorAll('h1, h2, h3');
@@ -71,6 +81,7 @@ export async function collectMaterial(url) {
       timestamp: new Date().toISOString()
     };
   } catch (e) {
+    // Log navigation/extraction failures and fall through.
     console.error(`Error navigating to ${url}:`, e.message);
   } finally {
     await browser.close();
@@ -84,6 +95,7 @@ export async function collectMaterial(url) {
 
   const markdown = formatAsMarkdown(data);
 
+  // Save markdown + raw JSON for downstream generation.
   const filename = `notes/collected-${Date.now()}.md`;
   await fs.mkdir('notes', { recursive: true });
   await fs.writeFile(filename, markdown);
@@ -95,6 +107,7 @@ export async function collectMaterial(url) {
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
+  // Allow running this collector directly from the CLI.
   const url =
     process.argv[2] ||
     'https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise';
