@@ -2,10 +2,15 @@
 .env
 
 # Generated reports
-reports/*.md
-reports/*.html
-reports/*.json
-!reports/.gitkeep
+notes/*.md
+notes/*.html
+notes/*.json
+!notes/.gitkeep
+
+progress/*.md
+progress/*.html
+progress/*.json
+!progress/.gitkeep
 
 # Dependencies
 node_modules/
