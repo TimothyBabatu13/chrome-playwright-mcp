@@ -17,7 +17,13 @@ const FLASHCARD_SCHEMA = {
   }
 };
 
+/**
+ * Parse AI output into a JSON array, tolerating fenced code blocks.
+ * @param {string} text - Raw AI response text.
+ * @returns {Array<Object>} Parsed flashcards array.
+ */
 function parseJSONArray(text) {
+  // Strip optional markdown fences before parsing.
   const cleaned = text
     .trim()
     .replace(/^```(?:json)?\s*/i, '')
@@ -28,6 +34,7 @@ function parseJSONArray(text) {
     return JSON.parse(cleaned);
   } catch (error) {
     console.error('Failed to parse JSON:', error.message);
+    // Fallback: parse the largest bracketed array in the response.
     const start = cleaned.indexOf('[');
     const end = cleaned.lastIndexOf(']');
     if (start === -1 || end <= start) {
@@ -37,6 +44,15 @@ function parseJSONArray(text) {
   }
 }
 
+/**
+ * Generate flashcards from text content using the AI backend.
+ * @param {string} content - Study material to transform.
+ * @param {Object} [options={}] - Generation options.
+ * @param {number} [options.count=20] - Number of cards to request.
+ * @param {string} [options.difficulty='intermediate'] - Target difficulty.
+ * @param {boolean} [options.includeCode=true] - Whether to include code-focused cards.
+ * @returns {Promise<Array<Object>>} Generated flashcards.
+ */
 export async function generateFlashcards(content, options = {}) {
   const { count = 20, difficulty = 'intermediate', includeCode = true } = options;
 
@@ -44,6 +60,7 @@ export async function generateFlashcards(content, options = {}) {
     throw new Error('No content provided for flashcard generation.');
   }
 
+  // Give the model strict output rules to keep parsing reliable.
   const systemPrompt = `You are an expert educator creating study flashcards.
 
 Rules:
@@ -65,6 +82,7 @@ Example output format:
   }
 ]`;
 
+  // Keep the user payload bounded for token safety.
   const userPrompt = `Create flashcard from this content:\n\n${content.slice(0, 10000)}`;
 
   console.log(`Generating ${count} flashcards with AI...`);
@@ -74,6 +92,7 @@ Example output format:
     maxOutputTokens: Math.max(2048, count * 160)
   });
 
+  // Parse and enforce the requested card count.
   const flashcards = parseJSONArray(response);
 
   if (!Array.isArray(flashcards) || flashcards.length !== count) {
@@ -85,6 +104,7 @@ Example output format:
     .map(card => ({
       question: String(card.question).trim(),
       answer: String(card.answer).trim(),
+      // Normalize tags so downstream exporters can rely on arrays.
       tags: Array.isArray(card.tags) ? card.tags.map(String) : []
     }));
 
@@ -97,6 +117,12 @@ Example output format:
   return valid;
 }
 
+/**
+ * Generate flashcards from a file and persist them to disk.
+ * @param {string} filePath - Source notes file path.
+ * @param {Object} [options={}] - Generation options passed to generateFlashcards.
+ * @returns {Promise<{flashcards: Array<Object>, outputPath: string}>}
+ */
 export async function generateFromFile(filePath, options = {}) {
   console.log(`Reading content from: ${filePath}`);
 
@@ -104,6 +130,7 @@ export async function generateFromFile(filePath, options = {}) {
 
   const flashcards = await generateFlashcards(content, options);
 
+  // Save next to the source file with a predictable suffix.
   const outputPath = `${filePath.replace(/\.(md|json)$/, '')}-flashcards.json`;
   await fs.writeFile(outputPath, JSON.stringify(flashcards, null, 2));
 

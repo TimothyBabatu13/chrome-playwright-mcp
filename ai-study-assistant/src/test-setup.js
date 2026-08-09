@@ -1,10 +1,15 @@
 #!/usr/bin/env node
+/**
+ * Validate local prerequisites for the AI Study Assistant.
+ */
 import 'dotenv/config';
 
 console.log('\nChecking setup...\n');
 
+// Collect pass/fail status for each validation step.
 const checks = [];
 
+// Ensure Node.js runtime is new enough for modern APIs used in this project.
 const nodeVersion = process.version;
 const majorVersion = parseInt(nodeVersion.slice(1).split('.')[0], 10);
 if (majorVersion >= 18) {
@@ -16,6 +21,7 @@ if (majorVersion >= 18) {
   checks.push(false);
 }
 
+// Verify browser automation dependency is available.
 try {
   await import('playwright');
   console.log('Playwright installed');
@@ -25,6 +31,7 @@ try {
   checks.push(false);
 }
 
+// Verify OpenAI SDK exists for supported non-Gemini providers.
 try {
   await import('openai/index.mjs');
   console.log('OpenAI package installed (used for non-Gemini providers)');
@@ -36,6 +43,7 @@ try {
 
 const provider = (process.env.AI_PROVIDER || 'gemini').toLowerCase();
 
+// Map each hosted provider to its required API key env var.
 const KEY_FOR_PROVIDER = {
   gemini: { env: 'GEMINI_API_KEY', url: 'https://aistudio.google.com/apikey' },
   openai: { env: 'OPENAI_API_KEY', url: 'https://platform.openai.com/api-keys' },
@@ -46,6 +54,7 @@ const KEY_FOR_PROVIDER = {
 console.log(`\n   Provider: ${provider}`);
 
 if (provider === 'lmstudio' || provider === 'ollama' || provider === 'local') {
+  // Local providers are checked via their /models endpoint.
   const url =
     provider === 'ollama'
       ? process.env.OLLAMA_URL || 'http://localhost:11434/v1'
@@ -64,6 +73,7 @@ if (provider === 'lmstudio' || provider === 'ollama' || provider === 'local') {
     checks.push(false);
   }
 } else {
+  // Hosted providers are checked via presence of the expected API key.
   const { env, url } = KEY_FOR_PROVIDER[provider] ?? KEY_FOR_PROVIDER.gemini;
   const key = process.env[env];
 
@@ -78,6 +88,7 @@ if (provider === 'lmstudio' || provider === 'ollama' || provider === 'local') {
   }
 }
 
+// Confirm Chromium can launch, which also verifies browser binaries are installed.
 try {
   const { chromium } = await import('playwright');
   const browser = await chromium.launch({ headless: true });
@@ -93,6 +104,7 @@ console.log(`\n${'─'.repeat(50)}`);
 const passed = checks.filter(Boolean).length;
 const total = checks.length;
 
+// Exit non-zero when any prerequisite fails so CI/scripts can detect failure.
 if (passed === total) {
   console.log("\n   Setup successful! You're ready!\n");
   process.exit(0);
