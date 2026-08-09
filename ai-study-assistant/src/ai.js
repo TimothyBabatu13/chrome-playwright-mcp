@@ -1,13 +1,16 @@
 import 'dotenv/config';
 import { fileURLToPath } from 'node:url';
-import { GoogleGenAI } from '@google/genai';
 import OpenAI from 'openai';
 
 /**
  * Shared AI helper for routing prompts to the configured provider.
- * Supports Gemini by default and OpenAI-compatible backends such as OpenAI, LM Studio, Ollama, and custom endpoints.
+ * It supports Gemini and OpenAI-compatible backends such as OpenAI, LM Studio, Ollama, and custom endpoints.
  */
 const AI_PROVIDER = (process.env.AI_PROVIDER || 'gemini').toLowerCase();
+
+// Google's Interactions API endpoint
+const GEMINI_BASE_URL =
+  process.env.GEMINI_BASE_URL || 'https://generativelanguage.googleapis.com/v1beta';
 
 const DEFAULT_MODELS = {
   gemini: 'gemini-3.1-flash-lite',
@@ -58,14 +61,6 @@ function createOpenAIClient() {
 }
 
 /**
- * Create a Gemini client for the selected AI provider.
- * @returns {GoogleGenAI} A configured Gemini client instance.
- */
-function createGeminiClient() {
-  return new GoogleGenAI({ apiKey: requireKey('GEMINI_API_KEY') });
-}
-
-/**
  * Ensure that a required environment variable exists.
  * @param {string} name - The environment variable name to check.
  * @returns {string} The resolved API key or endpoint value.
@@ -110,31 +105,45 @@ function extractInteractionText(interaction) {
 }
 
 /**
- * Send a prompt to the Gemini SDK and return the generated text.
+ * Send a prompt to the Gemini API and return the generated text.
  * @param {string} systemPrompt - Optional system instructions for the model.
  * @param {string} userPrompt - The user-facing prompt to answer.
  * @param {object} options - Request settings such as schema and token limits.
  * @returns {Promise<string>} The model response as plain text.
  */
 async function askGemini(systemPrompt, userPrompt, { schema, temperature, maxOutputTokens }) {
-  const client = createGeminiClient();
-
-  const interaction = await client.interactions.create({
+  const body = {
     model: getModelName(),
-    system_instruction: systemPrompt,
     input: userPrompt,
     generation_config: {
-      temperature: temperature,
-      max_output_tokens: maxOutputTokens
-    },
-    response_format: {
-      type: 'text',
-      mime_type: 'application/json',
-      schema: schema || undefined
+      temperature,
+      ...(maxOutputTokens ? { max_output_tokens: maxOutputTokens } : {})
     }
+  };
+
+  if (systemPrompt) body.system_instruction = systemPrompt;
+
+  if (schema) body.response_format = schema;
+
+  const response = await fetch(`${GEMINI_BASE_URL}/interactions`, {
+    method: 'POST',
+    headers: {
+      'x-goog-api-key': requireKey('GEMINI_API_KEY'),
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(body)
   });
 
-  const text = extractInteractionText(interaction);
+  const data = await response.json().catch(() => null);
+
+  if (!response.ok) {
+    const message = data?.error?.message || `HTTP ${response.status}`;
+    const error = new Error(message);
+    error.status = response.status;
+    throw error;
+  }
+
+  const text = extractInteractionText(data);
 
   if (!text) {
     throw new Error(
@@ -174,7 +183,7 @@ async function askOpenAICompatible(systemPrompt, userPrompt, { temperature, maxO
  * Send a prompt to the configured AI provider with built-in retry handling.
  * @param {string} systemPrompt - Optional system instructions.
  * @param {string} userPrompt - The prompt to send to the model.
- * @param {object} [options] - Optional settings such as temperature, token limits, schema, and retries.
+ * @param {object} [options] - Optional settings such as temperature, token limits, and retries.
  * @returns {Promise<string>} The final model response.
  */
 export async function askAI(systemPrompt, userPrompt, options = {}) {
@@ -248,8 +257,8 @@ export async function testAI() {
 
   try {
     const response = await askAI(
-      'You are a helpful assistant helping users debug their code using the chrome mcp library and playwright.',
-      "What is the best way to use the chrome mcp library with playwright to debug a web page? Be brief and concise in your answer, don't provide code examples, and don't include any extra information. Just provide a short answer to the question."
+      'You are a helpful assistant.',
+      'Say hello and confirm you are working! Be enthusiastic and brief.'
     );
 
     console.log('\nAI Response:', response);

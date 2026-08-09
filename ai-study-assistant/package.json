@@ -1,0 +1,37 @@
+{
+  "name": "ai-study-assistant",
+  "version": "1.0.0",
+  "description": "AI-powered study assistant that collects material and generates flashcards",
+  "type": "module",
+  "main": "src/collector.js",
+  "scripts": {
+    "collect": "node src/collector.js",
+    "generate": "node src/generate.js",
+    "practice": "node src/practice.js",
+    "test-setup": "node src/test-setup.js",
+    "test-ai": "node src/ai.js",
+    "dev": "node src/practice.js",
+    "review": "node src/spaced-repetition.js"
+  },
+  "keywords": [
+    "ai",
+    "study",
+    "flashcards",
+    "playwright",
+    "gemini"
+  ],
+  "author": "",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "openai": "^4.28.0",
+    "playwright": "^1.42.0",
+    "dotenv": "17.4.2",
+    "cheerio": "1.2.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.24"
+  }
+}
