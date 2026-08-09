@@ -5,6 +5,8 @@
 notes/*.md
 notes/*.html
 notes/*.json
+notes/*.csv
+notes/*.txt
 !notes/.gitkeep
 
 progress/*.md
